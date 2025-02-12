@@ -6,6 +6,32 @@ output: html_document
 ---
 
 ```{r}
-pwd()
 movies <- read.csv('movies.csv', stringsAsFactors = FALSE)
 ```
+
+```{r}
+library(ggplot2)
+
+# Generar datos de ejemplo
+set.seed(123)
+data <- matrix(rnorm(200), ncol=2)
+
+# Calcular la suma de errores dentro de los clusters (WCSS)
+wcss <- function(k) {
+  kmeans(data, k, nstart = 10)$tot.withinss
+}
+
+k_values <- 1:10
+wcss_values <- sapply(k_values, wcss)
+
+# Graficar el método del codo
+df <- data.frame(k = k_values, wcss = wcss_values)
+ggplot(df, aes(x = k, y = wcss)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Método del Codo") +
+  xlab("Número de Clusters") +
+  ylab("WCSS (Suma de cuadrados dentro del cluster)")  # Asegúrate de que esta línea no esté comentada
+
+```
+
