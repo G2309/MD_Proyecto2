@@ -132,7 +132,82 @@ ggplot(cluster_plot, aes(x = PC1, y = PC2, color = Cluster)) +
        y = "Segunda Componente Principal")
 ```
 
-## 
+## Interpretacion de los resultados
+
+```{r}
+movies_clean$cluster <- as.factor(kmeans_result$cluster)
+
+# Estadísticas descriptivas por cluster
+cluster_stats <- movies_clean %>%
+  group_by(cluster) %>%
+  summarise(
+    n = n(),
+    # Medidas de tendencia central
+    avg_budget = mean(budget, na.rm = TRUE),
+    avg_revenue = mean(revenue, na.rm = TRUE),
+    avg_runtime = mean(runtime, na.rm = TRUE),
+    avg_popularity = mean(popularity, na.rm = TRUE),
+    avg_vote = mean(voteAvg, na.rm = TRUE),
+    avg_vote_count = mean(voteCount, na.rm = TRUE),
+    avg_actors = mean(actorsAmount, na.rm = TRUE),
+    avg_women = mean(castWomenAmount, na.rm = TRUE),
+    avg_men = mean(castMenAmount, na.rm = TRUE),
+    # Medidas de dispersión
+    sd_budget = sd(budget, na.rm = TRUE),
+    sd_revenue = sd(revenue, na.rm = TRUE),
+    # Métricas derivadas
+    roi = (mean(revenue, na.rm = TRUE) - mean(budget, na.rm = TRUE)) / mean(budget, na.rm = TRUE)
+  )
+
+print("Análisis de Clusters:")
+print(cluster_stats)
+
+# Presupuesto vs Ingresos
+ggplot(movies_clean, aes(x = budget, y = revenue, color = cluster)) +
+  geom_point(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Presupuesto vs Ingresos por Cluster",
+       x = "Presupuesto",
+       y = "Ingresos")
+
+# Popularidad vs Calificación promedio
+ggplot(movies_clean, aes(x = popularity, y = voteAvg, color = cluster)) +
+  geom_point(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Popularidad vs Calificación por Cluster",
+       x = "Popularidad",
+       y = "Calificación Promedio")
+```
+
+###Interpretación de los Grupos y Hallazgos
+Distribución de los Clusters (K-means)
+
+La distribución de clusters ordenadas de mayor a menor, me dio lo siguiente:
+
+  Cluster 4: 2,513 películas (45.6%), representando la mayoría de las producciones con características promedio.
+  Cluster 1: 1,315 películas (24.0%), con características que se desvían moderadamente del estándar.
+    Cluster 3: 873 películas (15.9%), probablemente películas independientes o de menor inversión.
+    Cluster 2: 796 películas (14.5%), caracterizadas por mayor presupuesto e impacto en la industria.
+
+####Calidad del Agrupamiento
+
+El coeficiente de silueta obtenido fue de 0.145 para K-means y 0.105 para clustering jerárquico. Aunque ambos valores son relativamente bajos, K-means mostró una mejor separación de grupos, lo que justifica su uso en la interpretación.
+Análisis Visual mediante PCA
+
+- Cluster 4 se encuentra en una posición central y densa, lo que sugiere que representa la categoría más común de películas.
+- Cluster 2 se extiende hacia la derecha, indicando valores elevados en ciertas métricas.
+- Cluster 3 se agrupa en la parte inferior del espacio PCA, reflejando un presupuesto menor.
+- Cluster 1 presenta una distribución más dispersa, lo que sugiere una mayor variabilidad en sus características.
+
+#### Relevancia para la Industria
+
+Los resultados reflejan una estructura de mercado donde:
+
+- La mayoría de las películas siguen un patrón estándar (Cluster 4).
+- Las superproducciones representan un segmento más reducido pero influyente (Cluster 2).
+- Existe un mercado intermedio de películas con impacto moderado (Cluster 1).
+- Se mantiene un sector significativo de producciones de menor presupuesto (Cluster 3).
+
 
 
 
