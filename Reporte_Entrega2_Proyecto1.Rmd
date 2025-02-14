@@ -71,7 +71,7 @@ for(i in 1:length(wss_diff)) {
 ## Agrupamiento
 
 ```{r}
-# Usar el preprocesamiento del ejercicio 1
+# Para el ejercicio 2 de clustering estare utilizando la seed 531
 movies_clean <- movies %>%
   select(popularity, budget, revenue, runtime, 
          genresAmount, productionCoAmount, 
@@ -82,38 +82,30 @@ movies_clean <- movies %>%
   mutate(across(everything(), remove_outliers)) %>%
   na.omit()
 
-# Escalar los datos
 movies_scaled <- scale(movies_clean)
 
-# 1. K-means con k=4 (basado en el análisis del codo previo)
 set.seed(531)
 kmeans_result <- kmeans(movies_scaled, 
                        centers = 4, 
                        nstart = 50,
                        iter.max = 50)
 
-# 2. Clustering Jerárquico
-# Usar una muestra para el clustering jerárquico si el dataset es muy grande
 set.seed(531)
 sample_size <- min(1000, nrow(movies_scaled))
 sample_indices <- sample(1:nrow(movies_scaled), sample_size)
 movies_sample <- movies_scaled[sample_indices, ]
 
-# Calcular matriz de distancias de la muestra
 dist_matrix <- dist(movies_sample, method = "euclidean")
 hclust_result <- hclust(dist_matrix, method = "ward.D2")
 hclust_clusters <- cutree(hclust_result, k = 4)
 
-# 3. Evaluar calidad de k-means
 silhouette_kmeans <- silhouette(kmeans_result$cluster, 
                                dist(movies_scaled))
 sil_score_kmeans <- mean(silhouette_kmeans[,3])
 
-# 4. Evaluar calidad del clustering jerárquico
 silhouette_hclust <- silhouette(hclust_clusters, dist_matrix)
 sil_score_hclust <- mean(silhouette_hclust[,3])
 
-# 5. Imprimir resultados
 cat("\nComparación de Algoritmos de Clustering:\n")
 cat("\nK-means:")
 cat("\n- Número de observaciones por cluster:\n")
@@ -125,7 +117,6 @@ cat("\n- Número de observaciones por cluster:\n")
 print(table(hclust_clusters))
 cat("\n- Coeficiente de silueta promedio:", round(sil_score_hclust, 3))
 
-# 6. Visualizar clusters k-means (usando las dos primeras componentes principales)
 pca_result <- prcomp(movies_scaled)
 cluster_plot <- data.frame(
   PC1 = pca_result$x[,1],
@@ -140,6 +131,8 @@ ggplot(cluster_plot, aes(x = PC1, y = PC2, color = Cluster)) +
        x = "Primera Componente Principal",
        y = "Segunda Componente Principal")
 ```
+
+## 
 
 
 
