@@ -3,6 +3,7 @@ title: "Entrega2_Proyecto1"
 author: "Gustavo Cruz; Pedro Guzman"
 date: "2025-02-12"
 output: html_document
+knit: (function(input, ...) { rmarkdown::render(input, output_file = "docs/index.html") })
 ---
 
 ```{r}
@@ -10,28 +11,55 @@ movies <- read.csv('movies.csv', stringsAsFactors = FALSE)
 ```
 
 ```{r}
-library(ggplot2)
+# Cargar librerías necesarias
+library(tidyverse)
+library(cluster)
+library(factoextra)
 
-# Generar datos de ejemplo
-set.seed(123)
-data <- matrix(rnorm(200), ncol=2)
+# Primero, veamos la estructura de los datos
+str(movies)
 
-# Calcular la suma de errores dentro de los clusters (WCSS)
-wcss <- function(k) {
-  kmeans(data, k, nstart = 10)$tot.withinss
+# Verificar cuáles columnas son numéricas
+numeric_columns <- movies %>%
+  select_if(is.numeric) %>%
+  names()
+
+print("Columnas numéricas disponibles:")
+print(numeric_columns)
+
+# Crear dataframe solo con variables numéricas relevantes para clustering
+movies_numeric <- movies %>%
+  select(popularity, budget, revenue, runtime, 
+         genresAmount, productionCoAmount, 
+         productionCountriesAmount, voteCount, 
+         voteAvg, actorsAmount, 
+         castWomenAmount, castMenAmount) %>%
+  # Convertir explícitamente a numérico si es necesario
+  mutate(across(everything(), as.numeric)) %>%
+  # Eliminar filas con NA
+  na.omit()
+
+# Verificar que no hay problemas con los datos
+summary(movies_numeric)
+
+# Ahora sí, escalar los datos
+movies_scaled <- scale(movies_numeric)
+
+# Calcular la suma de cuadrados dentro de los clusters para diferentes valores de k
+wss <- numeric(20)
+for (k in 1:20) {
+  km <- kmeans(movies_scaled, centers = k, nstart = 25)
+  wss[k] <- km$tot.withinss
 }
 
-k_values <- 1:10
-wcss_values <- sapply(k_values, wcss)
-
-# Graficar el método del codo
-df <- data.frame(k = k_values, wcss = wcss_values)
-ggplot(df, aes(x = k, y = wcss)) +
-  geom_line() +
-  geom_point() +
-  ggtitle("Método del Codo") +
-  xlab("Número de Clusters") +
-  ylab("WCSS (Suma de cuadrados dentro del cluster)")  # Asegúrate de que esta línea no esté comentada
-
+# Crear gráfica del método del codo
+fviz_nbclust(movies_scaled, 
+             kmeans, 
+             method = "wss",
+             k.max = 20) +
+  labs(title = "Método del Codo para Determinar k Óptimo",
+       x = "Número de Clusters (k)",
+       y = "Suma total de cuadrados dentro de clusters") +
+  theme_minimal()
 ```
 
