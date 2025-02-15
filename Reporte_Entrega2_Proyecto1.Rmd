@@ -132,6 +132,84 @@ ggplot(cluster_plot, aes(x = PC1, y = PC2, color = Cluster)) +
        y = "Segunda Componente Principal")
 ```
 
+## Análisis de componentes
+
+Primero se deben analizar cuáles variables serán importantes para el análisis y cuáles pueden descartarse.
+
+Las variables del dataset son:
+ID: es una variable cualitativa nominal, pues sirve para identificar cada película
+
+Popularity: es una variable cuantitativa medible continua pues es una cantdad que puede medirse en base a ciertos criterios.
+
+Budget: es una variable cuantitativa contable pues representa una cantidad de dinero.
+
+Revenue: es una variable cuantitativa contable ya que representa una cantidad de dinero.
+
+“Original title: es una variable cualitativa nominal ya que sirve para identificar el nombre de cada película.”
+
+Original language: es una variable cualitativa nominal ya que sirve para indicar en que lenguaje se hizo la película originalmente.
+
+Title: es una variable cualitativa nominal y sirve para indicar cuál es el título en inglés de la película
+
+Home page: es una variable cualitativa nominal y sirve para indicar si la película tiene un sitio web.
+
+Video: es una variable cualitativa nominal, pues sirve para idnciar si la película tiene promocionales o no.
+
+Director: es una variable cualitativa nominal la cua´l indica el nombre del director de la película.
+
+Runtime: es una variable cuantitativa continua medible, pues sirve para indicar el tiempo de duración de la película el cuál puede ser perfectamente medido con aparatos como un temporizador o cronómetro.
+
+Genres: es una variable cualitativa nominal pues sirve para identificar los géneros de la película.
+
+Genres amount: es una variable cuantitativa discreta pues indica la cantidad de géneros a los que pertence cada película.
+
+Production company: es una variale cualitativa nominal la cual indica la compañía que produjo la película.
+
+Production company amount: es una variable cuantitativa discreta que indica la cantidad de compañías involucradas en la producción de la película.
+
+Production company country: es una variable cualitativa nominal pues sirve para indicar que países estuvieron involucrados en la producción de la película.
+
+Production countries amount: es una variable cuantitativa discreta la cuál indica la cantidadde países involucrados en la producción de la película.
+
+Release date: es una variable cuantitativa nominal pues indica la fecha de lanzamiento de la película. A pesar de ser numeral no es cuantitativa pues no puede contarse.
+
+Vote count: es una variable cuantitativa discreta pues indica la cantidad de gente que reseñó la película.”
+
+Vote average: es una variable
+
+Actors: es una variable cualitativa nominal la cuál indica el nombre de los actores involucrados en la película.
+
+“Actors popularity: es una variable cuantitatva discreta la cuál sirve panra indicar, en números decimales, que tan poular es un actor.”
+
+Actor Character: es una variable cualitativa nominal pues sirve para indicar el nombre del personaje que interpreta cada actor en la película.
+
+Actors amount: es una variable cuantitativa discreta pues indica la cantidad de actores que están involucrados en la película.
+
+Cast women amount: es una variable cuantitativa discreta la cuál indica la cantidad de actrices que participaron en la película.
+
+Cast men amount: es una variable cuantitativa discreta que indica la canidad de actores que participaron el la película.
+
+La variable ID y las variables que corresponden a los títulos de la películas pueden descartarse, pues su único propósito es identificar cada película. Otra variables descartables son las variables Actor Character y Actors pues simplemente indican los nombres de los actores involucrados en la película y los personajes a los que interpertan.
+
+La variable video puede perecer descartable, sin embargo puede dar información relevante para determinar el comportamiento de una película pues podría ser que el hecho de tener videos ayude al rendimiento en taquilla de una película o no. También podría ser útil para determinar si el presupuesto de una película se ve afectado si tiene videos promocionales.
+
+La variable genres es de utilidad ya que puede ser de ayuda para determinar si hay géneros de películas más famosos que otros o no, en el análsis exploratorio se determino que hay géneros de películas que han obtenido mejores rendimientos en taquilla y que son más populares que otros por lo que los géneros de una película pueden ser uan peiza de información relevante. 
+
+Si una película tiene o no un sitio web también puede ser relvante para el análisis pues podría considerarse como parte de la promoción de la película, por lo que esta variable puede ser de importancia para el análisis. 
+
+La fecha de lanzamiento también es relevante pues en el análisis exploratorio se demostró que hay épocas del año en donde las películas obtienen mejores ingresos, por ende se requiere extraer el mes de lanzamiento de cada película para el análisis.
+
+
+
+
+```{r}
+
+
+
+```
+
+
+
 ## Interpretacion de los resultados
 
 ```{r}
