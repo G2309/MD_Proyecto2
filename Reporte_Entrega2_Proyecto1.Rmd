@@ -2,10 +2,16 @@
 title: "Entrega2_Proyecto1"
 author: "Gustavo Cruz; Pedro Guzman"
 date: "2025-02-12"
-output: html_document
-knit: (function(input, ...) { rmarkdown::render(input, output_file = "docs/index.html") })
+output: pdf_document
+knit: (function(input, ...) { rmarkdown::render(input, output_file = "docs/index.pdf") })
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+
+Repositorio: https://github.com/G2309/MD_Proyecto2.git
 ```{r}
 movies <- read.csv('movies.csv', stringsAsFactors = FALSE)
 ```
@@ -134,6 +140,8 @@ ggplot(cluster_plot, aes(x = PC1, y = PC2, color = Cluster)) +
 
 ## Análisis de componentes
 
+### 3.1 ¿Qué variables categóricas serán necesarias?
+
 Primero se deben analizar cuáles variables serán importantes para el análisis y cuáles pueden descartarse.
 
 Las variables del dataset son:
@@ -193,22 +201,99 @@ La variable ID y las variables que corresponden a los títulos de la películas 
 
 La variable video puede perecer descartable, sin embargo puede dar información relevante para determinar el comportamiento de una película pues podría ser que el hecho de tener videos ayude al rendimiento en taquilla de una película o no. También podría ser útil para determinar si el presupuesto de una película se ve afectado si tiene videos promocionales.
 
-La variable genres es de utilidad ya que puede ser de ayuda para determinar si hay géneros de películas más famosos que otros o no, en el análsis exploratorio se determino que hay géneros de películas que han obtenido mejores rendimientos en taquilla y que son más populares que otros por lo que los géneros de una película pueden ser uan peiza de información relevante. 
+La variable genres es de utilidad ya que puede ser de ayuda para determinar si hay géneros de películas más famosos que otros o no, en el análisis exploratorio se determióo que hay géneros de películas que han obtenido mejores rendimientos en taquilla y que son más populares que otros por lo que los géneros de una película pueden ser una pieza de información relevante. Sin embargo la columna genres posee un formato complicado el cuál aumentaría la dimensionalidad del dataset, por ende se usuará la variable genres amount y se determinará si la diversidad de géneros afecta el rendimiento de una película o si atrae a más cientes. 
 
 Si una película tiene o no un sitio web también puede ser relvante para el análisis pues podría considerarse como parte de la promoción de la película, por lo que esta variable puede ser de importancia para el análisis. 
 
 La fecha de lanzamiento también es relevante pues en el análisis exploratorio se demostró que hay épocas del año en donde las películas obtienen mejores ingresos, por ende se requiere extraer el mes de lanzamiento de cada película para el análisis.
 
+La variable director es importante ya que hay directores más famosos que otros sin embargo hay bastantes directores diferentes en el dataset, por lo que asignarle un número a cada uno podría darnos un rango de números bastante elevado. Por esa razón se convertirán ess valores a la cantidad de directores involucrados y se analizara si la cantidad de directores pesa en el desempeño de una película
+
+El país de origen es importante, sin embargo hay películas, por esta razón se usará la variable productionCountriesAmount y se determinará si el hecho de que la película esté distribuida en más,  o menos cantidad de películas es importante o no.
+
+El nombre de la distribuidora también es importante, sin embargo hay muchas distribuidoras, por esa razón se usará la variable de production amount para determinar si tener una o más productoras involucradas es importante para la película. 
+
+El lenguaje original también puede ser un factor importante, por lo que se convertirán a factores los valores de esta variable
 
 
+```{r, warning=FALSE}
+#Transformación de la data
 
-```{r}
+movies_pca <-movies
+
+#Convertimos las columnas relacionadas a los videos procionales
+
+
+movies_pca$video[is.na(movies_pca$video)] <- FALSE
+movies_pca$video<- as.numeric(factor(movies_pca$video)) #2 true, 1 false
+#Trasnformamos los valores NA de la variable del website
+movies_pca$homePage[!is.na(movies_pca$homePage)] <- TRUE
+movies_pca$homePage[is.na(movies_pca$homePage)] <- FALSE
+movies_pca$homePage<- as.numeric(factor(movies_pca$homePage))  #2 true, 1 false
+
+movies_pca <- na.omit(movies_pca)
+
+#Transformar el lenguage original
+movies_pca$originalLanguage<- as.numeric(factor(movies_pca$originalLanguage))
+
+
+#Obtener los meses de lanzamiento de cada película
+
+movies_pca$releaseDate <- as.numeric(format(as.Date(movies_pca$releaseDate, format="%Y-%m-%d"), "%m"))
+
+#Cambiar los valores de la columna del director. 
+
+movies_pca$director <- sapply(gregexpr("\\|", movies_pca$director), function(x) sum(x >= 0)) + 1
+
+movies_pca$actorsPopularity <- sapply(strsplit(movies_pca$actorsPopularity, "\\|"), 
+                                  function(x) mean(as.numeric(x), na.rm = TRUE))
+
+movies_pca$castWomenAmount <- as.integer(movies_pca$castWomenAmount)
+movies_pca$castMenAmount <- as.integer(movies_pca$castMenAmount)
+
 
 
 
 ```
 
 
+### 3.2 ¿Es conveniente hacer PCA?
+```{r}
+
+
+library(psych)
+library(FactoMineR)
+library(factoextra)
+library(corrplot)
+
+movies_final <- movies_pca[, c("budget", "homePage", "revenue", "runtime", "video", "director", "actorsPopularity", "originalLanguage", "popularity", "releaseDate", "voteAvg", "voteCount", "genresAmount", "productionCoAmount", "productionCountriesAmount", "actorsAmount", "castWomenAmount", "castMenAmount" )]
+
+
+rcor <- cor(movies_final, use = "pairwise.complete.obs")
+det(rcor)
+
+
+```
+El valor del determinate de la matriz es de `r det(rcor)`, es más cercano a 0 que a 1, por lo que se puede decir que las variables si están relacionadas
+
+
+#### KMO
+
+```{r}
+
+KMO(as.matrix(movies_final))
+
+```
+Se obtuvo que el MSA es de 0.64, por lo que la adecuación muestral para el análisis factorial es aceptable.
+
+#### Prueba esfericidad de Bartlett.
+
+Por último se hará este prueba para verificar completamente si se puede hacer un análisis de componentes sobre el dataset
+
+```{r}
+cortest.bartlett(rcor)
+```
+El p value es de 1.799032e-08, por lo que este test también sugiere que es adecuado hacer un análisis de componentes.
 
 ## Interpretacion de los resultados
 
