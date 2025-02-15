@@ -2,8 +2,8 @@
 title: "Entrega2_Proyecto1"
 author: "Gustavo Cruz; Pedro Guzman"
 date: "2025-02-12"
-output: pdf_document
-knit: (function(input, ...) { rmarkdown::render(input, output_file = "docs/index.pdf") })
+output: html_document
+knit: (function(input, ...) { rmarkdown::render(input, output_file = "docs/index.html") })
 ---
 
 ```{r setup, include=FALSE}
