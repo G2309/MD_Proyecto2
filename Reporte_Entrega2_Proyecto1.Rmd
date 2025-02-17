@@ -207,13 +207,12 @@ Si una película tiene o no un sitio web también puede ser relvante para el an�
 
 La fecha de lanzamiento también es relevante pues en el análisis exploratorio se demostró que hay épocas del año en donde las películas obtienen mejores ingresos, por ende se requiere extraer el mes de lanzamiento de cada película para el análisis.
 
-La variable director es importante ya que hay directores más famosos que otros sin embargo hay bastantes directores diferentes en el dataset, por lo que asignarle un número a cada uno podría darnos un rango de números bastante elevado. Por esa razón se convertirán ess valores a la cantidad de directores involucrados y se analizara si la cantidad de directores pesa en el desempeño de una película
 
 El país de origen es importante, sin embargo hay películas, por esta razón se usará la variable productionCountriesAmount y se determinará si el hecho de que la película esté distribuida en más,  o menos cantidad de películas es importante o no.
 
 El nombre de la distribuidora también es importante, sin embargo hay muchas distribuidoras, por esa razón se usará la variable de production amount para determinar si tener una o más productoras involucradas es importante para la película. 
 
-El lenguaje original también puede ser un factor importante, por lo que se convertirán a factores los valores de esta variable
+El lenguaje original no es una variable nominal, por lo que se descartará para el análisis. 
 
 
 ```{r, warning=FALSE}
@@ -233,17 +232,13 @@ movies_pca$homePage<- as.numeric(factor(movies_pca$homePage))  #2 true, 1 false
 
 movies_pca <- na.omit(movies_pca)
 
-#Transformar el lenguage original
-movies_pca$originalLanguage<- as.numeric(factor(movies_pca$originalLanguage))
-
 
 #Obtener los meses de lanzamiento de cada película
 
 movies_pca$releaseDate <- as.numeric(format(as.Date(movies_pca$releaseDate, format="%Y-%m-%d"), "%m"))
 
-#Cambiar los valores de la columna del director. 
+#Cambiar los valores de la columna de la popularidad. 
 
-movies_pca$director <- sapply(gregexpr("\\|", movies_pca$director), function(x) sum(x >= 0)) + 1
 
 movies_pca$actorsPopularity <- sapply(strsplit(movies_pca$actorsPopularity, "\\|"), 
                                   function(x) mean(as.numeric(x), na.rm = TRUE))
@@ -266,7 +261,8 @@ library(FactoMineR)
 library(factoextra)
 library(corrplot)
 
-movies_final <- movies_pca[, c("budget", "homePage", "revenue", "runtime", "video", "director", "actorsPopularity", "originalLanguage", "popularity", "releaseDate", "voteAvg", "voteCount", "genresAmount", "productionCoAmount", "productionCountriesAmount", "actorsAmount", "castWomenAmount", "castMenAmount" )]
+movies_final <- movies_pca[, c("budget", "homePage", "revenue", "runtime", "video", "actorsPopularity", "popularity", "releaseDate", "voteAvg", "voteCount", "genresAmount", "productionCoAmount", "productionCountriesAmount", "actorsAmount", "castWomenAmount", "castMenAmount" )]
+movies_final <- na.omit(movies_final)
 
 
 rcor <- cor(movies_final, use = "pairwise.complete.obs")
@@ -284,7 +280,7 @@ El valor del determinate de la matriz es de `r det(rcor)`, es más cercano a 0 q
 KMO(as.matrix(movies_final))
 
 ```
-Se obtuvo que el MSA es de 0.64, por lo que la adecuación muestral para el análisis factorial es aceptable.
+Se obtuvo que el MSA es de 0.7, por lo que la adecuación muestral para el análisis factorial es aceptable.
 
 #### Prueba esfericidad de Bartlett.
 
@@ -293,7 +289,73 @@ Por último se hará este prueba para verificar completamente si se puede hacer 
 ```{r}
 cortest.bartlett(rcor)
 ```
-El p value es de 1.799032e-08, por lo que este test también sugiere que es adecuado hacer un análisis de componentes.
+El p value es de 1.600765e-24, por lo que este test también sugiere que es adecuado hacer un análisis de componentes.
+
+#### Matriz de correlación
+```{r}
+corrplot(rcor)
+```
+Se puede observar una relación fuerte entre presupuesto y cantidad de votos y revenue. Otra relación fuerte se observar entre el revenue de cada película y su cantidad de votos. También se puede observar una fuerte relación ente la cantidad de mujeres en el cast y la cantidad de actores en total, a más actrizes, más actores. 
+
+#### PCA
+
+```{r}
+
+#Esclalar y normalizar
+
+
+componentes <- prcomp(movies_final, scale = T)
+componentes
+
+
+```
+
+El resumen del modelo es este:
+
+```{r}
+summary(componentes)
+```
+
+#### Regla de Kaiser
+
+```{r}
+eigen_v<-componentes$sdev^2
+eigen_v
+```
+Según esta regla, debemos quedarnos con las primeras 6 componentes pues su eigenvalor es mayor a 1.
+
+#### Porcentaje de varianza
+
+```{r}
+fviz_eig(componentes, addlabels = TRUE, ylim = c(0, 80))
+```
+El gráfico anterior muestra que con las primeras 8 componentes se puede explicar más del 60% de la varianza. 
+
+
+#### Interpretación de las componentes
+
+```{r}
+fviz_contrib(componentes, choice = "var", axes = 1)
+fviz_contrib(componentes, choice = "var", axes = 2)
+fviz_contrib(componentes, choice = "var", axes = 3)
+fviz_contrib(componentes, choice = "var", axes = 4)
+fviz_contrib(componentes, choice = "var", axes = 5)
+fviz_contrib(componentes, choice = "var", axes = 6)
+```
+```{r}
+var<-get_pca_var(componentes)
+corrplot(var$cos2, is.corr = F)
+```
+
+
+
+La componente 1 se asocia con el éxito de una película, pues las variables voteCount, revenue, budgets, runtime, cantidad de actrices y cantidad de actores en totales están respresentadas en esta componente. Las películas más populares suelen tener presupuestos más grandes, mayor cantidad de reseñas, un presupuesto mayor.
+
+La componente 3 se asocia con la popularidad del cast de la película, pues la popularidad de los actorers y la cantidad de estos está relacionada a esta componente. 
+
+La componente 4 podría asociarse con la calidad de la película a ojos del público, pues representa el promedio de votos de la película. 
+
+
 
 ## Interpretacion de los resultados
 
@@ -342,7 +404,7 @@ ggplot(movies_clean, aes(x = popularity, y = voteAvg, color = cluster)) +
        y = "Calificación Promedio")
 ```
 
-###Interpretación de los Grupos y Hallazgos
+### Interpretación de los Grupos y Hallazgos
 Distribución de los Clusters (K-means)
 
 La distribución de clusters ordenadas de mayor a menor, me dio lo siguiente:
