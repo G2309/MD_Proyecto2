@@ -1,4 +1,4 @@
----
+# ---
 title: "Entrega2_Proyecto1"
 author: "Gustavo Cruz; Pedro Guzman"
 date: "2025-02-12"
@@ -360,6 +360,7 @@ La componente 4 podría asociarse con la calidad de la película a ojos del púb
 
 
 ```{r}
+# Instalación y carga de paquetes
 install.packages("arules", dependencies=TRUE)
 install.packages("arulesViz", dependencies = TRUE)
 
@@ -368,27 +369,32 @@ library(arulesViz)
 
 rules <- movies
 
-
+# Procesamiento de datos booleanos
 rules$video[is.na(rules$video)] <- FALSE
 rules$video <- ifelse(rules$video == FALSE, "No", ifelse(rules$video == TRUE, "Si", rules$video))
 
 rules$homePage[is.na(rules$homePage)] <- FALSE
 rules$homePage[!is.na(rules$homePage)] <- TRUE
-rules$video <- ifelse(rules$homePage == FALSE, "No", ifelse(rules$homePage == TRUE, "Si", rules$homePage))
+rules$homePage <- ifelse(rules$homePage == FALSE, "No", ifelse(rules$homePage == TRUE, "Si", rules$homePage))
+
+# Procesamiento de fecha
 rules$releaseDate <- as.numeric(format(as.Date(rules$releaseDate, format="%Y-%m-%d"), "%m"))
 
+# Procesamiento de popularidad de actores
 rules$actorsPopularity <- sapply(strsplit(rules$actorsPopularity, "\\|"), 
-                                  function(x) mean(as.numeric(x), na.rm = TRUE))
+                                function(x) mean(as.numeric(x), na.rm = TRUE))
 
+# Conversión de tipos
 rules$castWomenAmount <- as.integer(rules$castWomenAmount)
 rules$castMenAmount <- as.integer(rules$castMenAmount)
 
+# Discretización de variables numéricas
 rules$budget <- cut(rules$budget, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 rules$revenue <- cut(rules$revenue, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
-rules$runtime <- cut(rules$runtime, breaks = 5, labels = c("Bajo", "Mediano", "Alto"))
+rules$runtime <- cut(rules$runtime, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 rules$actorsPopularity <- cut(rules$actorsPopularity, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 rules$popularity <- cut(rules$popularity, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
-rules$releaseDate <- cut(rules$releaseDate, breaks = 5, labels = c("Primer trimestre", "Mediados de año", "Finales de año"))
+rules$releaseDate <- cut(rules$releaseDate, breaks = 5, labels = c("Inicio de año", "Primer trimestre", "Mediados de año", "Tercer trimestre", "Fin de año"))
 rules$voteAvg <- cut(rules$voteAvg, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 rules$voteCount <- cut(rules$voteCount, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 rules$genresAmount <- cut(rules$genresAmount, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
@@ -398,17 +404,24 @@ rules$actorsAmount <- cut(rules$actorsAmount, breaks = 5, labels = c("Muy Bajo",
 rules$castWomenAmount <- cut(rules$castWomenAmount, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 rules$castMenAmount <- cut(rules$castMenAmount, breaks = 5, labels = c("Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"))
 
-rules <- rules[, c("budget", "homePage", "revenue", "runtime", "video", "actorsPopularity", "popularity", "releaseDate", "voteAvg", "voteCount", "genresAmount", "productionCoAmount", "productionCountriesAmount", "actorsAmount", "castWomenAmount", "castMenAmount" )]
+# Selección de columnas
+rules <- rules[, c("budget", "homePage", "revenue", "runtime", "video", "actorsPopularity", "popularity", 
+                   "releaseDate", "voteAvg", "voteCount", "genresAmount", "productionCoAmount", 
+                   "productionCountriesAmount", "actorsAmount", "castWomenAmount", "castMenAmount")]
 
+# Conversión a transacciones
 transactions <- as(rules, "transactions")
 
-rules_final <- apriori(transactions, parameter = list(support = 0.35,
-                                        target = "frequent", 
-                                        minlen=3, maxlen=4))
+# Generación de reglas de asociación
+rules_final <- apriori(transactions, 
+                      parameter = list(support = 0.35,
+                                     confidence = 0.8,  # Añadido parámetro de confianza
+                                     target = "rules",  # Cambiado a "rules" en lugar de "frequent"
+                                     minlen = 3, 
+                                     maxlen = 4))
 
+# Inspección de reglas ordenadas por lift
 inspect(sort(rules_final, by = "lift", decreasing = TRUE))
-
-rules 
 ```
 
 
