@@ -502,6 +502,13 @@ Los resultados reflejan una estructura de mercado donde:
 - Existe un mercado intermedio de películas con impacto moderado (Cluster 1).
 - Se mantiene un sector significativo de producciones de menor presupuesto (Cluster 3).
 
+#### PCA
+
+Se determinó quelas primeras 8 componentes describen el 60% de la varianza en el conjunto de datos, además se halló el significado de estas componentes:
+
+ - Dim1: representa el éxito financiero de una peícula
+ - Dim3: se asocia con la popularidad del cast de una película
+ - Dim4: representa la calidad de le película en términos del público general
 
 
 
