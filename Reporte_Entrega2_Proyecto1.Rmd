@@ -421,8 +421,16 @@ rules_final <- apriori(transactions,
 
 inspect(head(sort(rules_final, by = "lift", decreasing = TRUE), n = 10))
 ```
+## Conclusiones de las Reglas de Asignacion
+Las películas con "presupuesto muy bajo" y "calificación media" tienden a recibir una "cantidad muy baja de votos". Este patrón es el más consistente, con un porcentaje del 43% y una confianza  alta del 99.7%, indica que hay una fuerte relación en los datos.
 
+Entre los factores influyentes, se observa que cuando un presupuesto muy bajo se combina con ingresos muy bajos, la relación se vuelve aún más fuerte (confianza de 99.8%). Además, la presencia de una página web no afecta significativamente esta tendencia (soporte de 42.88%), y las películas con baja popularidad también siguen el mismo patrón (soporte de 42.86%).
 
+En cuanto a las características técnicas, la ausencia de video no altera significativamente la relación (soporte de 42.78%). Además, las películas con una duración muy baja (42.70%) y actores de baja popularidad (42.35%) también mantienen el mismo comportamiento.
+
+Los valores de lift cercanos a 1.04 en todas las reglas nos sugieren que estas asociaciones son ligeramente más fuertes de lo esperado por azar. La alta confianza indica que las relaciones son muy confiables, y el soporte del 43% demuestra que estas reglas aplican a una porción significativa del dataset.
+
+En conclusión, las películas de bajo presupuesto con calificaciones medias tienden a recibir pocos votos, sin importar otros factores como la presencia de una página web, la cantidad de actores o la duración. Esto sugiere que el presupuesto es un factor determinante en la visibilidad y engagement de una película, más allá de sus otras características.
 
 ## Interpretacion de los resultados
 
